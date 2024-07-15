@@ -35,6 +35,12 @@ AllocSnakeGame(size_t w, size_t h) {
 }
 
 void
+SnakeGameChangeDirection(SnakeGame *sg, SnakeDirection direction) {
+	if (abs(direction - sg->direction) != 2)
+		sg->direction = direction;
+}
+
+void
 SnakeGameTick(SnakeGame* sg) {
 	ListNode *node = sg->snake->head;
 

@@ -50,6 +50,18 @@ int main() {
 			case 'q':
 				stop = 1;
 				break;
+			case 'h':
+				SnakeGameChangeDirection(sg, LEFT);
+				break;
+			case 'j':
+				SnakeGameChangeDirection(sg, DOWN);
+				break;
+			case 'k':
+				SnakeGameChangeDirection(sg, UP);
+				break;
+			case 'l':
+				SnakeGameChangeDirection(sg, RIGHT);
+				break;
 			}
 		}
 		usleep(1000 * TICK_MS);

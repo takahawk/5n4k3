@@ -6,7 +6,7 @@
 #include "vec2.h"
 
 typedef enum {
-	UP, DOWN, RIGHT, LEFT
+	UP, RIGHT, DOWN, LEFT
 } SnakeDirection;
 
 typedef struct {
@@ -25,6 +25,9 @@ typedef enum {
 
 SnakeGame*
 AllocSnakeGame(size_t w, size_t h);
+
+void
+SnakeGameChangeDirection(SnakeGame*, SnakeDirection);
 
 void
 SnakeGameTick(SnakeGame*);
