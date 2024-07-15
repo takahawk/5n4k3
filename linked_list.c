@@ -4,9 +4,10 @@
 #include <string.h>
 
 LinkedList*
-AllocLinkedList() {
+AllocLinkedList(size_t elemSize) {
 	LinkedList *ll = malloc(sizeof(LinkedList));
 	ll->head = NULL;
+	ll->elemSize = elemSize;
 	return ll;
 }
 

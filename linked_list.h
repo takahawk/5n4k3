@@ -14,7 +14,7 @@ typedef struct {
 } LinkedList;
 
 LinkedList*
-AllocLinkedList();
+AllocLinkedList(size_t elemSize);
 
 void
 LinkedListAdd(LinkedList*, void*);

@@ -1,6 +1,7 @@
 #include "snake_game.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "linked_list.h"
@@ -14,7 +15,7 @@ SnakeGame*
 AllocSnakeGame(size_t w, size_t h) {
 	SnakeGame *sg = malloc(sizeof(SnakeGame));
 	sg->field = AllocMatrix(w, h, sizeof(SnakeGameObject));
-	sg->snake = AllocLinkedList();
+	sg->snake = AllocLinkedList(sizeof(IntVec2));
 	
 	IntVec2 snakePosition = { .x = w / 2, .y = h / 2 };
 	LinkedListAdd(sg->snake, &snakePosition);
@@ -35,7 +36,33 @@ AllocSnakeGame(size_t w, size_t h) {
 
 void
 SnakeGameTick(SnakeGame* sg) {
-	// TODO: impl
+	ListNode *node = sg->snake->head;
+
+	IntVec2	exTailPos = *((IntVec2 *) node->val);
+	while (node->next != NULL) {
+		exTailPos = *((IntVec2 *) node->next->val);
+		memcpy(node->next->val, node->val, sg->snake->elemSize);
+	}
+	MatrixSet(sg->field, exTailPos.x, exTailPos.y, &((SnakeGameObject) {VOID})); 
+
+	IntVec2 *headPos = sg->snake->head->val;
+	switch (sg->direction) {
+	case UP:
+		headPos->y -= 1;
+		break;
+	case DOWN:
+		headPos->y += 1;
+		break;
+	case RIGHT:
+		headPos->x += 1;
+		break;
+	case LEFT:
+		headPos->x -= 1;
+		break;
+	}
+	MatrixSet(sg->field, headPos->x, headPos->y, &((SnakeGameObject) {SNAKE}));
+
+	// TODO: add bounds check
 }
 
 void
