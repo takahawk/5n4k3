@@ -3,10 +3,17 @@
 
 #include "linked_list.h"
 #include "matrix.h"
+#include "vec2.h"
+
+typedef enum {
+	UP, DOWN, RIGHT, LEFT
+} SnakeDirection;
 
 typedef struct {
 	Matrix *field;
 	LinkedList *snake;
+	SnakeDirection direction;
+	IntVec2 apple;
 } SnakeGame;
 
 typedef enum {
