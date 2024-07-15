@@ -1,12 +1,15 @@
 #ifndef LINKED_LIST_H_
 #define LINKED_LIST_H_
 
-typedef struct {
+#include <stddef.h>
+
+typedef struct ListNode {
 	void *val;
-	LinkedList *next;
+	struct ListNode *next;
 } ListNode;
 
 typedef struct {
+	size_t elemSize;
 	ListNode *head;
 } LinkedList;
 

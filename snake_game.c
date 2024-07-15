@@ -4,14 +4,23 @@
 
 #include "linked_list.h"
 #include "matrix.h"
+#include "vec2.h"
 
 SnakeGame*
 AllocSnakeGame(size_t w, size_t h) {
 	SnakeGame *sg = malloc(sizeof(SnakeGame));
-	sg->field = AllocMatrix(w, h);
-	
-	// TODO: position walls?
+	sg->field = AllocMatrix(w, h, sizeof(SnakeGameObject));
 	sg->snake = AllocLinkedList();
+	
+	// TODO: position snake?
+	IntVec2 snakePosition = { .x = w / 2, .y = h / 2 };
+	LinkedListAdd(sg->snake, &snakePosition);
+	MatrixSet(sg->field,
+		  snakePosition.x, 
+		  snakePosition.y, 
+		  &((SnakeGameObject){SNAKE}));
+	// TODO: position apple?
+	// TODO: position walls?
 	return sg;
 }
 

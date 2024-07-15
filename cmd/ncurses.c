@@ -1,22 +1,34 @@
 #include <ncurses.h>
 
-#include "../matrix.h"
+#include "../snake_game.h"
 
 int main() {
 	initscr();
 	int max_x, max_y;
-	getmaxyx(stdscr, max_x, max_y);
+	getmaxyx(stdscr, max_y, max_x);
 
-	Matrix *m = AllocMatrix(max_y, max_x, sizeof(char));
-	MatrixSet(m, 10, 10, &(char){'A'});
-	MatrixSet(m, 10, 11, &(char){'B'});
-	MatrixSet(m, 11, 10, &(char){'C'});
-	MatrixSet(m, 11, 11, &(char){'D'});
+	SnakeGame *sg = AllocSnakeGame(max_x, max_y);
+	Matrix *m = sg->field;
 
 	for (int x = 0; x < m->w; x++) {
 		for (int y = 0; y < m->h; y++) {
-			char *c = MatrixGet(m, x, y);
-			mvaddch(y, x, *c);
+			SnakeGameObject *o = MatrixGet(m, x, y);
+			char c;
+			switch (*o) {
+			case SNAKE:
+				c = 'S';	
+				break;
+			case APPLE:
+				c = '@';
+				break;
+			case WALL:
+				c = 'x';
+				break;
+			default:
+				c = ' ';
+				break;
+			}
+			mvaddch(y, x, c);
 		}
 	}
 	
@@ -24,7 +36,7 @@ int main() {
 	wrefresh(stdscr);
 	getch();
 
-	FreeMatrix(m);
+	FreeSnakeGame(sg);
 	endwin();
 	return 0;
 }

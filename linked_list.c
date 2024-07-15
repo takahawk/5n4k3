@@ -1,6 +1,7 @@
 #include "linked_list.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 LinkedList*
 AllocLinkedList() {
@@ -14,6 +15,9 @@ LinkedListAdd(LinkedList* ll, void* val) {
 	ListNode *ln = malloc(sizeof(ListNode));
 	ln->next = ll->head;
 	ll->head = ln;
+
+	ln->val = malloc(ll->elemSize);
+	memcpy(ll->head->val, val, ll->elemSize);
 }
 
 
@@ -28,12 +32,13 @@ LinkedListRemoveHead(LinkedList* ll) {
 
 void
 FreeLinkedList(LinkedList* ll) {
-	ListNode *ln = ll.head;
+	ListNode *ln = ll->head;
 	
 	while (ln) {
 		ListNode *p = ln;
-		free(p);
 		ln = ln->next;
+		free(p->val);
+		free(p);
 	}
 	free(ll);
 }
