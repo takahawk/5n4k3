@@ -80,6 +80,9 @@ SnakeGameReset(SnakeGame* sg) {
 
 void
 SnakeGameTick(SnakeGame* sg) {
+	if (sg->state == GAME_OVER) {
+		return;
+	}
 	IntVec2 newPos = *((IntVec2 *) sg->snake->head->val);
 
 	switch (sg->direction) {
@@ -98,10 +101,16 @@ SnakeGameTick(SnakeGame* sg) {
 	}
 	CheckBounds(sg, &newPos);
 	
-	if (GetGameObject(sg, newPos.x, newPos.y) == APPLE) {
+	switch (GetGameObject(sg, newPos.x, newPos.y)) {
+	case APPLE:
 		LinkedListAdd(sg->snake, &newPos);
 		PositionApple(sg);
-	} else {
+		break;
+	case WALL:
+	case SNAKE:
+		sg->state = GAME_OVER;
+		break;
+	case VOID:
 		ListNode *node = sg->snake->head;
 
 		IntVec2	exTailPos = *((IntVec2 *) node->val);
@@ -111,11 +120,10 @@ SnakeGameTick(SnakeGame* sg) {
 		}
 		SetGameObject(sg, exTailPos.x, exTailPos.y, VOID);
 		SetNodeValue(sg->snake->head, newPos);
+		break;
 	}
-
+	
 	SetGameObject(sg, newPos.x, newPos.y, SNAKE);
-
-	// TODO: add bounds check
 }
 
 void
