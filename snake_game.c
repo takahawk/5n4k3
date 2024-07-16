@@ -9,14 +9,35 @@
 #include "matrix.h"
 #include "vec2.h"
 
-inline static void
-PositionApple(SnakeGame *sg);
-
 inline static SnakeGameObject
-GetGameObject(SnakeGame *sg, size_t x, size_t y);
+GetGameObject(SnakeGame *sg, size_t x, size_t y) {
+	return *((SnakeGameObject *) MatrixGet(sg->field, x, y));
+}
 
 inline static void
-SetGameObject(SnakeGame *sg, size_t x, size_t y, SnakeGameObject obj);
+SetGameObject(SnakeGame *sg, size_t x, size_t y, SnakeGameObject obj) {
+	MatrixSet(sg->field, x, y, &((int) { obj }));	
+}
+
+inline static IntVec2
+GetNodeValue(ListNode *ln) {
+	return *((IntVec2 *) ln->val);
+}
+
+inline static void
+SetNodeValue(ListNode *ln, IntVec2 val) {
+	memcpy(ln->val, &val, sizeof(IntVec2));
+}
+
+inline static IntVec2
+SwapNodeValue(ListNode *ln, IntVec2 newVal) {
+	IntVec2 oldVal = GetNodeValue(ln);
+	SetNodeValue(ln, newVal);
+	return oldVal;
+}
+
+static void
+PositionApple(SnakeGame *sg);
 
 SnakeGame*
 AllocSnakeGame(size_t w, size_t h) {
@@ -75,13 +96,11 @@ SnakeGameTick(SnakeGame* sg) {
 
 		IntVec2	exTailPos = *((IntVec2 *) node->val);
 		while (node->next != NULL) {
-			IntVec2 t = exTailPos;
-			exTailPos = *((IntVec2 *) node->next->val);
-			memcpy(node->next->val, &t, sg->snake->elemSize);
+			exTailPos = SwapNodeValue(node->next, exTailPos);
 			node = node->next;
 		}
 		SetGameObject(sg, exTailPos.x, exTailPos.y, VOID);
-		memcpy(sg->snake->head->val, &newPos, sg->snake->elemSize);
+		SetNodeValue(sg->snake->head, newPos);
 	}
 
 	SetGameObject(sg, newPos.x, newPos.y, SNAKE);
@@ -96,7 +115,7 @@ FreeSnakeGame(SnakeGame* sg) {
 	free(sg);
 }
 
-inline static void
+static void
 PositionApple(SnakeGame *sg) {
 	if (GetGameObject(sg, sg->apple.x, sg->apple.y) == APPLE) {
 		SetGameObject(sg, sg->apple.x, sg->apple.y, VOID);
@@ -107,12 +126,3 @@ PositionApple(SnakeGame *sg) {
 	MatrixSet(sg->field, sg->apple.x, sg->apple.y, &((int) {APPLE}));
 }
 
-inline static SnakeGameObject
-GetGameObject(SnakeGame *sg, size_t x, size_t y) {
-	return *((SnakeGameObject *) MatrixGet(sg->field, x, y));
-}
-
-inline static void
-SetGameObject(SnakeGame *sg, size_t x, size_t y, SnakeGameObject obj) {
-	MatrixSet(sg->field, x, y, &((int) { obj }));	
-}

@@ -1,4 +1,9 @@
+#include <ctype.h>
+#include <errno.h>
 #include <ncurses.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/param.h>
 #include <unistd.h>
 
 #include "../snake_game.h"
@@ -6,13 +11,35 @@
 #define TICK_MS 100
 
 
-int main() {
-	initscr();
-	int max_x, max_y;
-	getmaxyx(stdscr, max_y, max_x);
-	nodelay(stdscr, 1);
+typedef struct {
+	int width;
+	int height;
+} Options;
 
-	SnakeGame *sg = AllocSnakeGame(max_x, max_y);
+typedef struct {
+	int maxWidth;
+	int maxHeight;
+} SystemInfo;
+
+void
+handleOptions(int argc, char **argv, SystemInfo sysInfo, Options *opts);
+
+int main(int argc, char **argv) {
+	SystemInfo sysInfo;
+	Options opts;
+	WINDOW *w;
+	
+	initscr();
+	getmaxyx(stdscr, sysInfo.maxHeight, sysInfo.maxWidth);
+	handleOptions(argc, argv, sysInfo, &opts);
+	nodelay(stdscr, 1);
+	
+	int starty = (sysInfo.maxHeight - opts.height) / 2;
+	int startx = (sysInfo.maxWidth - opts.width) / 2;
+	
+	w = newwin(opts.height, opts.width, starty, startx);
+
+	SnakeGame *sg = AllocSnakeGame(opts.width, opts.height);
 
 	Matrix *m = sg->field;
 	int stop = 0;
@@ -24,25 +51,25 @@ int main() {
 				char c;
 				switch (*o) {
 				case SNAKE:
-					c = 'S';	
+					c = 'x';
 					break;
 				case APPLE:
 					c = '@';
 					break;
 				case WALL:
-					c = 'x';
+					c = '#';
 					break;
 				default:
 					c = ' ';
 					break;
 				}
-				mvaddch(y, x, c);
+				mvwaddch(w, y, x, c);
 			}
 		}
 		
-		box(stdscr, 0, 0);
+		box(w, 0, 0);
 
-		wrefresh(stdscr);
+		wrefresh(w);
 
 		int ch = getch();
 		if (ch != ERR) {
@@ -71,4 +98,73 @@ int main() {
 	FreeSnakeGame(sg);
 	endwin();
 	return 0;
+}
+
+void
+handleOptions(int argc, char **argv, SystemInfo sysInfo, Options *opts) {
+	int c;
+
+	// defaults
+	int defSize = MIN(sysInfo.maxWidth, sysInfo.maxHeight);
+	opts->width = defSize; 
+	opts->height = defSize;
+
+	while ((c = getopt(argc, argv, "w:h:")) != -1) {
+		switch (c) {
+		case 'w':
+			int w = strtol(optarg, NULL, 10);
+			if (errno == EINVAL) {
+				fprintf(stderr, "width should be integer");
+				exit(-1);
+			}
+
+			if (w <= 0) {
+				fprintf(stderr, "width should be more than zero");
+				exit(-1);
+			}
+
+			if (w > sysInfo.maxWidth) {
+				fprintf(stderr, "width is more than maximum terminal screen width");
+				exit(-1);
+			}
+
+			opts->width = w;
+			
+			break;
+		case 'h':
+			int h = strtol(optarg, NULL, 10);
+			if (errno == EINVAL) {
+				fprintf(stderr, "height should be integer");
+				exit(-1);
+			}
+
+			if (h <= 0) {
+				fprintf(stderr, "height should be more than zero");
+				exit(-1);
+			}
+
+			if (h > sysInfo.maxWidth) {
+				fprintf(stderr, "height is more than maximum terminal screen height");
+				exit(-1);
+			}
+
+			opts->height = h;
+
+			break;
+		case '?':
+			if (optopt == 'w' || optopt == 'h') {
+				fprintf(stderr, "Options -w and -h requires arguments");
+				exit(-1);
+			}
+			if (isprint(optopt)) {
+				fprintf(stderr, "Unknown option -%c", optopt);
+				exit(-1);
+			} else {
+				fprintf(stderr, "Illegal option character");
+				exit(-1);
+			}
+		default:
+			abort();
+		}
+	}
 }
