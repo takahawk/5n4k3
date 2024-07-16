@@ -1,5 +1,6 @@
 #include "snake_game.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -11,11 +12,18 @@
 inline static void
 PositionApple(SnakeGame *sg);
 
+inline static SnakeGameObject
+GetGameObject(SnakeGame *sg, size_t x, size_t y);
+
+inline static void
+SetGameObject(SnakeGame *sg, size_t x, size_t y, SnakeGameObject obj);
+
 SnakeGame*
 AllocSnakeGame(size_t w, size_t h) {
 	SnakeGame *sg = malloc(sizeof(SnakeGame));
 	sg->field = AllocMatrix(w, h, sizeof(SnakeGameObject));
 	sg->snake = AllocLinkedList(sizeof(IntVec2));
+	memset(&sg->apple, 0, sizeof(IntVec2));
 	
 	IntVec2 snakePosition = { .x = w / 2, .y = h / 2 };
 	LinkedListAdd(sg->snake, &snakePosition);
@@ -42,31 +50,41 @@ SnakeGameChangeDirection(SnakeGame *sg, SnakeDirection direction) {
 
 void
 SnakeGameTick(SnakeGame* sg) {
-	ListNode *node = sg->snake->head;
+	IntVec2 newPos = *((IntVec2 *) sg->snake->head->val);
 
-	IntVec2	exTailPos = *((IntVec2 *) node->val);
-	while (node->next != NULL) {
-		exTailPos = *((IntVec2 *) node->next->val);
-		memcpy(node->next->val, node->val, sg->snake->elemSize);
-	}
-	MatrixSet(sg->field, exTailPos.x, exTailPos.y, &((SnakeGameObject) {VOID})); 
-
-	IntVec2 *headPos = sg->snake->head->val;
 	switch (sg->direction) {
 	case UP:
-		headPos->y -= 1;
+		newPos.y -= 1;
 		break;
 	case DOWN:
-		headPos->y += 1;
+		newPos.y += 1;
 		break;
 	case RIGHT:
-		headPos->x += 1;
+		newPos.x += 1;
 		break;
 	case LEFT:
-		headPos->x -= 1;
+		newPos.x -= 1;
 		break;
 	}
-	MatrixSet(sg->field, headPos->x, headPos->y, &((SnakeGameObject) {SNAKE}));
+	
+	if (GetGameObject(sg, newPos.x, newPos.y) == APPLE) {
+		LinkedListAdd(sg->snake, &newPos);
+		PositionApple(sg);
+	} else {
+		ListNode *node = sg->snake->head;
+
+		IntVec2	exTailPos = *((IntVec2 *) node->val);
+		while (node->next != NULL) {
+			IntVec2 t = exTailPos;
+			exTailPos = *((IntVec2 *) node->next->val);
+			memcpy(node->next->val, &t, sg->snake->elemSize);
+			node = node->next;
+		}
+		SetGameObject(sg, exTailPos.x, exTailPos.y, VOID);
+		memcpy(sg->snake->head->val, &newPos, sg->snake->elemSize);
+	}
+
+	SetGameObject(sg, newPos.x, newPos.y, SNAKE);
 
 	// TODO: add bounds check
 }
@@ -80,6 +98,21 @@ FreeSnakeGame(SnakeGame* sg) {
 
 inline static void
 PositionApple(SnakeGame *sg) {
-	sg->apple = (IntVec2) { .x = rand() % sg->field->w, .y = rand() % sg->field->h };
+	if (GetGameObject(sg, sg->apple.x, sg->apple.y) == APPLE) {
+		SetGameObject(sg, sg->apple.x, sg->apple.y, VOID);
+	}
+	do {
+		sg->apple = (IntVec2) { .x = rand() % sg->field->w, .y = rand() % sg->field->h };
+	} while (GetGameObject(sg, sg->apple.x, sg->apple.y) != VOID);
 	MatrixSet(sg->field, sg->apple.x, sg->apple.y, &((int) {APPLE}));
+}
+
+inline static SnakeGameObject
+GetGameObject(SnakeGame *sg, size_t x, size_t y) {
+	return *((SnakeGameObject *) MatrixGet(sg->field, x, y));
+}
+
+inline static void
+SetGameObject(SnakeGame *sg, size_t x, size_t y, SnakeGameObject obj) {
+	MatrixSet(sg->field, x, y, &((int) { obj }));	
 }

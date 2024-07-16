@@ -18,7 +18,7 @@ LinkedListAdd(LinkedList* ll, void* val) {
 	ll->head = ln;
 
 	ln->val = malloc(ll->elemSize);
-	memcpy(ll->head->val, val, ll->elemSize);
+	memcpy(ln->val, val, ll->elemSize);
 }
 
 
