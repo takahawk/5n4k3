@@ -39,6 +39,9 @@ SwapNodeValue(ListNode *ln, IntVec2 newVal) {
 static void
 PositionApple(SnakeGame *sg);
 
+static void
+CheckBounds(SnakeGame *sg, IntVec2 *pos);
+
 SnakeGame*
 AllocSnakeGame(size_t w, size_t h) {
 	SnakeGame *sg = malloc(sizeof(SnakeGame));
@@ -87,6 +90,7 @@ SnakeGameTick(SnakeGame* sg) {
 		newPos.x -= 1;
 		break;
 	}
+	CheckBounds(sg, &newPos);
 	
 	if (GetGameObject(sg, newPos.x, newPos.y) == APPLE) {
 		LinkedListAdd(sg->snake, &newPos);
@@ -126,3 +130,19 @@ PositionApple(SnakeGame *sg) {
 	MatrixSet(sg->field, sg->apple.x, sg->apple.y, &((int) {APPLE}));
 }
 
+static void
+CheckBounds(SnakeGame *sg, IntVec2 *pos) {
+	if (pos->x < 0) {
+		pos->x = sg->field->w - 1;
+	}
+	if (pos->x >= sg->field->w) {
+		pos->x = 0;
+	}
+
+	if (pos->y < 0) {
+		pos->y = sg->field->h - 1;
+	}
+	if (pos->y >= sg->field->h) {
+		pos->y = 0;
+	}
+}

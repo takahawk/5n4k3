@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 			}
 		}
 		usleep(1000 * TICK_MS);
-		SnakeGameTick(sg);	
+		SnakeGameTick(sg);
 	}
 
 	FreeSnakeGame(sg);
