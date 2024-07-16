@@ -14,6 +14,7 @@
 typedef struct {
 	int width;
 	int height;
+	int addWalls;
 } Options;
 
 typedef struct {
@@ -27,19 +28,28 @@ handleOptions(int argc, char **argv, SystemInfo sysInfo, Options *opts);
 int main(int argc, char **argv) {
 	SystemInfo sysInfo;
 	Options opts;
+	WINDOW *borderWindow;
 	WINDOW *w;
+	int termW, termH;
 	
 	initscr();
-	getmaxyx(stdscr, sysInfo.maxHeight, sysInfo.maxWidth);
+	getmaxyx(stdscr, termH, termW);
+	sysInfo = (SystemInfo) {
+		.maxHeight = termH - 2,
+		.maxWidth = termW - 2
+	};
+	
 	handleOptions(argc, argv, sysInfo, &opts);
 	nodelay(stdscr, 1);
+	noecho();
 	
-	int starty = (sysInfo.maxHeight - opts.height) / 2;
-	int startx = (sysInfo.maxWidth - opts.width) / 2;
+	int starty = (termH - opts.height) / 2;
+	int startx = (termW - opts.width) / 2;
 	
 	w = newwin(opts.height, opts.width, starty, startx);
+	borderWindow = newwin(opts.height, opts.width, starty, startx);
 
-	SnakeGame *sg = AllocSnakeGame(opts.width, opts.height);
+	SnakeGame *sg = AllocSnakeGame(opts.width, opts.height, opts.addWalls);
 
 	Matrix *m = sg->field;
 	int stop = 0;
@@ -67,7 +77,8 @@ int main(int argc, char **argv) {
 			}
 		}
 		
-		box(w, 0, 0);
+		// TODO: fix displaying borders
+		box(borderWindow, 0, 0);
 
 		wrefresh(w);
 
@@ -109,8 +120,11 @@ handleOptions(int argc, char **argv, SystemInfo sysInfo, Options *opts) {
 	opts->width = defSize; 
 	opts->height = defSize;
 
-	while ((c = getopt(argc, argv, "w:h:")) != -1) {
+	while ((c = getopt(argc, argv, "Ww:h:")) != -1) {
 		switch (c) {
+		case 'W':
+			opts->addWalls = 1;
+			break;
 		case 'w':
 			int w = strtol(optarg, NULL, 10);
 			if (errno == EINVAL) {

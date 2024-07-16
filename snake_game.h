@@ -30,7 +30,7 @@ typedef enum {
 } SnakeGameObject;
 
 SnakeGame*
-AllocSnakeGame(size_t w, size_t h);
+AllocSnakeGame(size_t w, size_t h, int addWalls);
 
 void
 SnakeGameChangeDirection(SnakeGame*, SnakeDirection);

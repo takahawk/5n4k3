@@ -37,16 +37,28 @@ SwapNodeValue(ListNode *ln, IntVec2 newVal) {
 }
 
 static void
-PositionApple(SnakeGame *sg);
-
-static void
 CheckBounds(SnakeGame *sg, IntVec2 *pos);
 
+static void
+PositionApple(SnakeGame *sg);
+
 SnakeGame*
-AllocSnakeGame(size_t w, size_t h) {
+AllocSnakeGame(size_t w, size_t h, int addWalls) {
 	SnakeGame *sg = malloc(sizeof(SnakeGame));
 	sg->field = AllocMatrix(w, h, sizeof(SnakeGameObject));
 	sg->snake = AllocLinkedList(sizeof(IntVec2));
+
+	if (addWalls) {
+		for (int i = 0; i < w; i++) {
+			SetGameObject(sg, i, 0, WALL);
+			SetGameObject(sg, i, h - 1, WALL);
+		}
+
+		for (int j = 0; j < h; j++) {
+			SetGameObject(sg, 0, j, WALL);
+			SetGameObject(sg, w - 1, j, WALL);
+		}
+	}
 	
 	SnakeGameReset(sg);
 	// TODO: position walls?
