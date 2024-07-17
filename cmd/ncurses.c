@@ -36,6 +36,15 @@ timeMs() {
 	return tp.tv_sec * 1000 + tp.tv_usec / 1000.;
 }
 
+void
+printUsage() {
+	printf("Usage: 5n4k3 [OPTIONS]\n\n");
+	printf("Options:\n");
+	printf("\t-w <NUMBER>: set width\n");
+	printf("\t-h <NUMBER>: set height\n");
+	printf("\t-W: add walls\n");
+	printf("\t-H: print usage\n");
+}
 
 int main(int argc, char **argv) {
 	SystemInfo sysInfo;
@@ -151,7 +160,7 @@ handleOptions(int argc, char **argv, SystemInfo sysInfo, Options *opts) {
 	opts->width = defSize; 
 	opts->height = defSize;
 
-	while ((c = getopt(argc, argv, "Ww:h:")) != -1) {
+	while ((c = getopt(argc, argv, "HWw:h:")) != -1) {
 		switch (c) {
 		case 'W':
 			opts->addWalls = 1;
@@ -160,16 +169,19 @@ handleOptions(int argc, char **argv, SystemInfo sysInfo, Options *opts) {
 			int w = strtol(optarg, NULL, 10);
 			if (errno == EINVAL) {
 				fprintf(stderr, "width should be integer");
+				endwin();
 				exit(-1);
 			}
 
 			if (w <= 0) {
 				fprintf(stderr, "width should be more than zero");
+				endwin();
 				exit(-1);
 			}
 
 			if (w > sysInfo.maxWidth) {
 				fprintf(stderr, "width is more than maximum terminal screen width");
+				endwin();
 				exit(-1);
 			}
 
@@ -180,32 +192,44 @@ handleOptions(int argc, char **argv, SystemInfo sysInfo, Options *opts) {
 			int h = strtol(optarg, NULL, 10);
 			if (errno == EINVAL) {
 				fprintf(stderr, "height should be integer");
+				endwin();
 				exit(-1);
 			}
 
 			if (h <= 0) {
 				fprintf(stderr, "height should be more than zero");
+				endwin();
 				exit(-1);
 			}
 
 			if (h > sysInfo.maxWidth) {
 				fprintf(stderr, "height is more than maximum terminal screen height");
+				endwin();
 				exit(-1);
 			}
 
 			opts->height = h;
 
 			break;
+
+		case 'H':
+			endwin();
+			printUsage();
+			exit(0);
+			break;
 		case '?':
 			if (optopt == 'w' || optopt == 'h') {
 				fprintf(stderr, "Options -w and -h requires arguments");
+				endwin();
 				exit(-1);
 			}
 			if (isprint(optopt)) {
 				fprintf(stderr, "Unknown option -%c", optopt);
+				endwin();
 				exit(-1);
 			} else {
 				fprintf(stderr, "Illegal option character");
+				endwin();
 				exit(-1);
 			}
 		default:
