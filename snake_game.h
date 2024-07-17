@@ -20,6 +20,7 @@ typedef struct {
 	SnakeDirection direction;
 	IntVec2 apple;
 	SnakeGameState state;
+	int addWalls;
 } SnakeGame;
 
 typedef enum {

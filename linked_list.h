@@ -23,6 +23,9 @@ void
 LinkedListRemoveHead(LinkedList*);
 
 void
+LinkedListClear(LinkedList*);
+
+void
 FreeLinkedList(LinkedList*);
 
 #endif

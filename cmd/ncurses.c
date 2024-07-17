@@ -1,15 +1,18 @@
 #include <ctype.h>
 #include <errno.h>
+#include <math.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/param.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "../snake_game.h"
 
 #define TICK_MS 100
-
+#define DEATH_BLINK_FREQ 100.
+#define TIME_TO_RESET 2000.
 
 typedef struct {
 	int width;
@@ -24,6 +27,15 @@ typedef struct {
 
 void
 handleOptions(int argc, char **argv, SystemInfo sysInfo, Options *opts);
+
+long
+timeMs() {
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+
+	return tp.tv_sec * 1000 + tp.tv_usec / 1000.;
+}
+
 
 int main(int argc, char **argv) {
 	SystemInfo sysInfo;
@@ -52,15 +64,35 @@ int main(int argc, char **argv) {
 
 	Matrix *m = sg->field;
 	int stop = 0;
+	double timeToReset;
+	int gameOver = 0;
+	long prevTimestamp = timeMs();
+	long dt;
+	long blinkTimer;
 
 	while (!stop) {
+		dt = timeMs() - prevTimestamp;
+		prevTimestamp = timeMs();
+		blinkTimer = fmod(blinkTimer + dt, 2 * DEATH_BLINK_FREQ);
+		if (sg->state == GAME_OVER) {
+			if (!gameOver) {
+				gameOver = 1;	
+				timeToReset = TIME_TO_RESET;
+			}
+			timeToReset -= dt;
+			if (timeToReset <= 0) {
+				SnakeGameReset(sg);
+				gameOver = 0;
+			}
+		}
+	        int isSnakeBlinking = gameOver && blinkTimer > DEATH_BLINK_FREQ;
 		for (int x = 0; x < m->w; x++) {
 			for (int y = 0; y < m->h; y++) {
 				SnakeGameObject *o = MatrixGet(m, x, y);
 				char c;
 				switch (*o) {
 				case SNAKE:
-					c = 'x';
+					c = isSnakeBlinking ? ' ' : 'x';
 					break;
 				case APPLE:
 					c = '@';

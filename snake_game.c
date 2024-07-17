@@ -47,21 +47,11 @@ AllocSnakeGame(size_t w, size_t h, int addWalls) {
 	SnakeGame *sg = malloc(sizeof(SnakeGame));
 	sg->field = AllocMatrix(w, h, sizeof(SnakeGameObject));
 	sg->snake = AllocLinkedList(sizeof(IntVec2));
+	sg->addWalls = addWalls;
 
-	if (addWalls) {
-		for (int i = 0; i < w; i++) {
-			SetGameObject(sg, i, 0, WALL);
-			SetGameObject(sg, i, h - 1, WALL);
-		}
+	srand(time(NULL));
 
-		for (int j = 0; j < h; j++) {
-			SetGameObject(sg, 0, j, WALL);
-			SetGameObject(sg, w - 1, j, WALL);
-		}
-	}
-	
 	SnakeGameReset(sg);
-	// TODO: position walls?
 	return sg;
 }
 
@@ -74,8 +64,25 @@ SnakeGameChangeDirection(SnakeGame *sg, SnakeDirection direction) {
 void
 SnakeGameReset(SnakeGame* sg) {
 	sg->state = RUNNING;
+
+	MatrixSetZeros(sg->field);
 	memset(&sg->apple, 0, sizeof(IntVec2));
+	int w = sg->field->w;
+	int h = sg->field->h;
 	
+	if (sg->addWalls) {
+		for (int i = 0; i < w; i++) {
+			SetGameObject(sg, i, 0, WALL);
+			SetGameObject(sg, i, h - 1, WALL);
+		}
+
+		for (int j = 0; j < h; j++) {
+			SetGameObject(sg, 0, j, WALL);
+			SetGameObject(sg, w - 1, j, WALL);
+		}
+	}
+
+	LinkedListClear(sg->snake);
 	IntVec2 snakePosition = { .x = sg->field->w / 2, .y = sg->field->h / 2 };
 	LinkedListAdd(sg->snake, &snakePosition);
 	MatrixSet(sg->field,
@@ -85,7 +92,6 @@ SnakeGameReset(SnakeGame* sg) {
 
 	sg->direction = LEFT;
 
-	srand(time(NULL));
 
 	PositionApple(sg);
 }

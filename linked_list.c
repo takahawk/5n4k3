@@ -32,6 +32,12 @@ LinkedListRemoveHead(LinkedList* ll) {
 }
 
 void
+LinkedListClear(LinkedList* ll) {
+	while (ll->head)
+	       LinkedListRemoveHead(ll);	
+}
+
+void
 FreeLinkedList(LinkedList* ll) {
 	ListNode *ln = ll->head;
 	
