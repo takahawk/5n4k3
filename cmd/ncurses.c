@@ -46,8 +46,7 @@ int main(int argc, char **argv) {
 	int starty = (termH - opts.height) / 2;
 	int startx = (termW - opts.width) / 2;
 	
-	w = newwin(opts.height, opts.width, starty, startx);
-	borderWindow = newwin(opts.height, opts.width, starty, startx);
+	w = newwin(opts.height + 2, opts.width + 2, starty - 1, startx - 1);
 
 	SnakeGame *sg = AllocSnakeGame(opts.width, opts.height, opts.addWalls);
 
@@ -73,12 +72,12 @@ int main(int argc, char **argv) {
 					c = ' ';
 					break;
 				}
-				mvwaddch(w, y, x, c);
+				mvwaddch(w, y + 1, x + 1, c);
 			}
 		}
 		
 		// TODO: fix displaying borders
-		box(borderWindow, 0, 0);
+		box(w, 0, 0);
 
 		wrefresh(w);
 
